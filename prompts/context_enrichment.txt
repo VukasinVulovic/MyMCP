@@ -25,9 +25,6 @@ Examples of FORBIDDEN tools in this phase include (but are not limited to):
 - System.PrankUser
 - System.CommitSuicide
 
-- If the user request implies an action rather than data retrieval, respond with exactly:
-[]
-
 ====================
 STRICT OUTPUT RULES (ABSOLUTE)
 ====================
@@ -35,38 +32,39 @@ STRICT OUTPUT RULES (ABSOLUTE)
 - Output MUST be either:
   - A JSON array following the exact schema below, OR
   - An empty JSON array [].
-- Do NOT include explanations, reasoning, comments, markdown, or extra text.
-- Do NOT include leading or trailing whitespace.
-- Do NOT wrap the output in code blocks.
-- Do NOT echo the prompt, instructions, or user input.
+- MUST NOT include explanations, reasoning, comments, markdown, or extra text.
+- MUST NOT include leading or trailing whitespace.
+- MUST NOT wrap the output in code blocks.
+- MUST NOT echo the prompt, instructions, or user input.
 - Any output that is not valid JSON is a failure.
 
 ====================
 TOOL SELECTION RULES
 ====================
 - Only use tools explicitly listed in "Available Tools".
-- Do NOT invent or assume tools.
+- MUST NOT invent or assume tools.
 - Only select tools that return usable data or information.
-- Tools that only perform actions and do NOT return data MUST be ignored.
+- Tools that only perform actions and MUST NOT return data MUST be ignored.
 - If a tool description contains a disclaimer such as "Just performs an action", it MUST be ignored.
-- Do NOT include action-only tools unless their output is REQUIRED as input for another selected tool.
-- If a tool’s output is not yet available, skip it.
+- MUST NOT include action-only tools unless their output is REQUIRED as input for another selected tool.
+- If a tool's output is not yet available, skip it.
 - If one tool can provide data needed by another, select ONLY the data-providing tool.
 - Tool outputs are used only to select tools, not to generate text responses.
-- Do NOT call runCommand unless data about the computer is explicitly required.
-- Do NOT use a tool if in the definition the output is defined as None ex. "output": "None"
+- MUST NOT call runCommand unless data about the computer is explicitly required.
 
 ====================
 INPUT PARAMETERS RULES
 ====================
-- Include "input_paramaters" ONLY if the selected function requires it.
-- Generate input parameters ONLY if required by the tool definition.
-- Parameters MUST be provided as a single string.
-- Separate multiple parameters using a backtick (`).
-- Do NOT include parameter names.
-- Do NOT include schemas, placeholders, or example values (e.g. "string").
-- Do NOT include synonyms, explanations, or extra text.
-- Never generate input_paramaters for action-only tools.
+Include "input_paramaters" only if the selected function requires parameters.
+Generate "input_paramaters" only when required by the tool definition.
+"input_paramaters" must be a valid JSON object that exactly matches the function’s parameter schema.
+Parameter names MUST be included and must exactly match those defined in the tool description.
+Parameter values must conform to the expected types defined in the schema.
+Do NOT include parameters that are not defined in the schema.
+Do NOT include schemas, placeholders, or example values.
+Do NOT include synonyms, explanations, or extra text.
+Parameter values may be derived from the first AI output if relevant.
+If a function takes no parameters, omit "input_paramaters" entirely.
 
 ====================
 REQUIRED OUTPUT FORMAT

@@ -121,7 +121,15 @@ class Messaging:
     @staticmethod
     def getUsers():
         """
-        Returns a list of users that can receive a message
+        Retrieves the list of users who are eligible to receive messages.
+
+        This function returns a predefined collection of user identifiers
+        representing all supported or currently available recipients.
+        It can be used to determine valid targets before sending messages
+        or performing user-specific actions.
+
+        Returns:
+            list[str]: A list of user names that can receive a message
         """
 
         return [
@@ -145,3 +153,77 @@ class Messaging:
             "text": msg
         })
         
+class TrainApi:
+    @ai_callable
+    @staticmethod
+    def getArrivals(station: str, date: str=None) -> str:
+        """
+        Returns train arrivals and departures for a station.
+        The first parameter is the station name.
+        The second parameter is the date of the arrival, if not set, default will be today.
+
+        Returns data in json format.
+        """
+
+        res = requests.get(f"{os.getenv("TRAIN_API_ENDPOINT")}/stations")
+
+        station_name_safe = list(filter(lambda s: s["name"] == station.upper(), res.json().values()))[0]["safe name"]
+
+        if date is None or len(date) == 0:
+            date = datetime.datetime.now().strftime("%d.%m.%Y")
+
+        res2 = requests.get(f"{os.getenv("TRAIN_API_ENDPOINT")}/arrivals?date={date}&station={station_name_safe}")
+
+        currTime = datetime.datetime.strptime(datetime.datetime.now().strftime("%H:%M"), "%H:%M")
+
+        arrivals = list(filter(lambda a: a["Direction"] == "TrainDirection.INBOUND" and a["TrainType"] == "TrainType.COMMUTER_TRAIN" and datetime.datetime.strptime(a["ArrivalTime"], "%H:%M") > currTime, res2.json()["Arrivals"]))
+
+        return arrivals[min(len(arrivals), 3):]
+    
+class Programming:
+    @ai_callable
+    @staticmethod
+    def runPython(code: str) -> str:
+        """
+        Executes Python code and returns its result as a string.
+
+        Parameters:
+        -----------
+        code : str
+            A string containing valid Python code to execute.
+
+        Returns:
+        --------
+        str
+            The output of the executed code converted to a string.
+
+        Notes:
+        ------
+        - The function uses `eval()` to evaluate the expression.
+        - Only single expressions can be evaluated safely; statements like `for` or `if` blocks will cause an error.
+        - The return value is always cast to a string, even if the result is an integer, float, or other type.
+        - This function is decorated as `@staticmethod` and `@ai_callable` for AI tool integration.
+        """
+        return str(eval(code))
+    
+class Search:
+    @ai_callable
+    @staticmethod
+    def findImages(search: str) -> list[str]:
+        """
+        Finds images based on a query:
+        Performs an online search for images based on a given query string.
+        
+        Parameters:
+            search (str): The search term or phrase to look for images.
+        
+        Returns:
+            list[str]: A list of URLs pointing to images relevant to the search query.
+        
+        Notes:
+            - The function retrieves images from public sources on the internet.
+            - The number and quality of returned images may vary depending on the search term.
+        """
+        res = requests.get(f"https://customsearch.googleapis.com/customsearch/v1?cx={os.getenv("GOOGLE_IMAGES_API_SEARCH_ID")}&safe=off&searchType=image&key={os.getenv("GOOGLE_IMAGES_API_KEY")}&q={search}")
+
+        return list(map(lambda i: i["link"], res.json()["items"]))

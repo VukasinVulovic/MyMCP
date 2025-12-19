@@ -34,27 +34,31 @@ ACTION-ONLY RULES
 - Only select tools whose primary purpose is to perform an action.
 - Tools that return data MUST be ignored, even if relevant to the user request.
 - Tool outputs MUST NOT be used to generate text responses.
+- DO NOT run a same action with the same parameters again.
 
 ====================
 INPUT PARAMETERS RULES
 ====================
-- Include "input_paramaters" ONLY if the selected function requires it.
-- Generate input parameters ONLY if required by the tool definition.
-- Parameters MUST be provided as a single string.
-- Separate multiple parameters using a backtick (`).
-- Do NOT include parameter names.
-- Do NOT include schemas, placeholders, or example values.
-- Do NOT include synonyms, explanations, or extra text.
-- Parameter values MAY be derived from the first AI output if relevant.
-- Parameters are POSITIONAL, not named.
-- Parameter order MUST follow the order defined in the tool description.
-- Parameter names MUST NEVER appear in the output, even if present in the tool definition.
+Include "input_paramaters" only if the selected function requires parameters.
+Generate "input_paramaters" only when required by the tool definition.
+"input_paramaters" must be a valid JSON object that exactly matches the function’s parameter schema.
+Parameter names MUST be included and must exactly match those defined in the tool description.
+Parameter values must conform to the expected types defined in the schema.
+Do NOT include parameters that are not defined in the schema.
+Do NOT include schemas, placeholders, or example values.
+Do NOT include synonyms, explanations, or extra text.
+Parameter values may be derived from the first AI output if relevant.
+If a function takes no parameters, omit "input_paramaters" entirely.
 
-INVALID EXAMPLE (DO NOT DO THIS):
-"input_paramaters": "msg`hello`,user`John"
+FORBIDDEN:
+- Any pattern that assigns a name to a value
+- Any text that identifies or labels a value
 
-VALID EXAMPLE:
-"input_paramaters": "hello`John"
+If a value could be interpreted as either:
+- a parameter assignment, OR
+- a raw value
+
+it MUST be interpreted as a raw value.
 
 ====================
 REQUIRED OUTPUT FORMAT

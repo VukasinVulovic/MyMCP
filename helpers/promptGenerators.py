@@ -20,7 +20,7 @@ def generatePromptForTools(modules: list):
                 if hasattr(func, "__tool_prompt__"):
                     tool_prompts.append(func.__tool_prompt__)
 
-    return json.dumps(tool_prompts)
+    return tool_prompts
 
 def generateContextEnrichmentPrompt(tools_prompt: str, user_query: str):
     with open("./prompts/context_enrichment.txt", "r") as f:

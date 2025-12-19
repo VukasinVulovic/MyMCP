@@ -17,13 +17,15 @@ def ai_callable(func):
     params = dict(filter(lambda a: a[0] != "return", f.__annotations__.items()))
     params = dict([(item[0], generateSchema(item[1])) for item in params.items()])
 
+    output_schema = generateSchema(f.__annotations__.get('return')) if f.__annotations__.get('return') is not None else None
+
     # Attach tool_prompt__ to the function itself
     f.__tool_prompt__ = f"""
     {{
         "tool": "{f.__qualname__.split('.')[0]}",
         "function": "{f.__name__}",
         "description": "{f.__doc__}",
-        "output": "{f.__annotations__.get('return')}",
+        {('"output": '+json.dumps(output_schema)+',' if output_schema is not None else '') }
         "input_paramaters": {json.dumps(params)}
     }}
     """.replace("\n", "")
@@ -31,7 +33,7 @@ def ai_callable(func):
     return func  # Keep original type (normal, staticmethod, or classmethod)
 
 
-def useTool(modules, tool, function, params=None):
+def useTool(modules, tool, function, params: dict=None):
     result = "fail"
     tool_prompt = None
 
@@ -54,10 +56,10 @@ def useTool(modules, tool, function, params=None):
             if params is None:
                 result = func()
             else:
-                result = func(*params.split("`"))
+                result = func(**params)
 
             return tool_prompt, result
-        except:
+        except Exception as e:
             return tool_prompt, "fail"
         
     return (tool_prompt, result)
@@ -66,7 +68,7 @@ def runToolRequests(requests: list, modules: list):
     tool_outputs = []
 
     for tool in requests:
-        tool, output = useTool(modules, tool["tool"], tool["function"], tool["input_paramaters"] if len(tool["input_paramaters"]) > 0 else None)
+        tool, output = useTool(modules, tool["tool"], tool["function"], tool["input_paramaters"] if "input_paramaters" in tool else None)
 
         tool = json.loads(tool)
 
