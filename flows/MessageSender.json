@@ -1,0 +1,221 @@
+[
+    {
+        "id": "0b4b9360cb98a422",
+        "type": "tab",
+        "label": "Telegram Message MQTT Receiver",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "3602e1d8aea7e78c",
+        "type": "mqtt in",
+        "z": "0b4b9360cb98a422",
+        "name": "mqttMessage",
+        "topic": "telegram/send-message",
+        "qos": "2",
+        "datatype": "utf8",
+        "broker": "e24eda1f2aa69b08",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 190,
+        "y": 60,
+        "wires": [
+            [
+                "902e255eff990689",
+                "0326c345fb73a36e"
+            ]
+        ]
+    },
+    {
+        "id": "902e255eff990689",
+        "type": "function",
+        "z": "0b4b9360cb98a422",
+        "name": "function 1",
+        "func": "// Regex to detect image URLs\nconst imageRegex = /(https?:\\/\\/\\S+\\.(?:jpg|jpeg|png|gif|webp))/gi;\n\n// Extract all image URLs from msg.payload\nlet urls = msg.payload.match(imageRegex) || [];\n\n// Remove image URLs from the text for remaining text\nlet textOnly = msg.payload.replace(imageRegex, '').trim();\n\nif (urls.length > 0) {\n    // Build media array for sendMediaGroup\n    let media = urls.map((url, index) => ({\n        type: \"photo\",\n        media: url,\n        caption: index === 0 && textOnly ? textOnly : \"\"  // add text to first image caption\n    }));\n\n    msg.payload_ = msg.payload = {\n        chat_id: \"6194279352\",\n        media: media\n    };\n\n    msg.url = `https://api.telegram.org/${env.get(\"TELEGRAM_TOKEN\")}/sendMediaGroup`;\n\n} else if (textOnly) {\n    // No images, just send text\n    msg.payload = {\n        chat_id: \"6194279352\",\n        text: textOnly\n    };\n    msg.url = `https://api.telegram.org/${env.get(\"TELEGRAM_TOKEN\")}/sendMessage`;\n}\n\nmsg.headers = {\n    \"Content-Type\": \"application/json\"\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 560,
+        "y": 120,
+        "wires": [
+            [
+                "bf3263aaa4f39a45",
+                "633af3d85c1527dd"
+            ]
+        ]
+    },
+    {
+        "id": "bf3263aaa4f39a45",
+        "type": "http request",
+        "z": "0b4b9360cb98a422",
+        "name": "",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": true,
+        "headers": [],
+        "x": 770,
+        "y": 100,
+        "wires": [
+            [
+                "892bf1815a3c404c",
+                "5c6893e2c16ac359"
+            ]
+        ]
+    },
+    {
+        "id": "633af3d85c1527dd",
+        "type": "debug",
+        "z": "0b4b9360cb98a422",
+        "name": "Reqest",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 720,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "0326c345fb73a36e",
+        "type": "debug",
+        "z": "0b4b9360cb98a422",
+        "name": "Received message",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 530,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "892bf1815a3c404c",
+        "type": "debug",
+        "z": "0b4b9360cb98a422",
+        "name": "Response",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1180,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "5c6893e2c16ac359",
+        "type": "function",
+        "z": "0b4b9360cb98a422",
+        "name": "function 2",
+        "func": "if (!msg.payload.ok && (msg.payload.description.includes('WEBPAGE_MEDIA_EMPTY') || msg.payload.description.includes('WEBPAGE_CURL_FAILED')))\n{\n    const badImgIndx = [...(msg.payload.description.matchAll(/.+failed to send message.+([0-9]).+/gm))][0][1]-1;\n\n    msg.payload_.media.splice(badImgIndx, 1);\n\n    msg.payload = msg.payload_;\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 860,
+        "y": 460,
+        "wires": [
+            [
+                "6b4615e29e8b6244",
+                "5dac2200caa9da24"
+            ]
+        ]
+    },
+    {
+        "id": "6b4615e29e8b6244",
+        "type": "debug",
+        "z": "0b4b9360cb98a422",
+        "name": "FixedRequest",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1200,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "5dac2200caa9da24",
+        "type": "switch",
+        "z": "0b4b9360cb98a422",
+        "name": "If has images",
+        "property": "payload.media",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "nempty"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 1030,
+        "y": 320,
+        "wires": [
+            [
+                "bf3263aaa4f39a45"
+            ]
+        ]
+    },
+    {
+        "id": "e24eda1f2aa69b08",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "192.168.1.2",
+        "port": 1883,
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    }
+]

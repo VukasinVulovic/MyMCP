@@ -1,0 +1,125 @@
+[
+    {
+        "id": "f6f2187d.f17ca8",
+        "type": "tab",
+        "label": "Telegram Message MQTT Publisher",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "dcede141f5738dce",
+        "type": "http in",
+        "z": "f6f2187d.f17ca8",
+        "name": "New Telegram Message",
+        "url": "/http/new-telegram-message",
+        "method": "post",
+        "upload": false,
+        "skipBodyParsing": false,
+        "swaggerDoc": "",
+        "x": 220,
+        "y": 60,
+        "wires": [
+            [
+                "f12372a2f5d2c52d",
+                "11c7fe0cd5829a5f"
+            ]
+        ]
+    },
+    {
+        "id": "f12372a2f5d2c52d",
+        "type": "http response",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "statusCode": "200",
+        "headers": {},
+        "x": 780,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "2aa6ac6b73568378",
+        "type": "mqtt out",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "topic": "telegram/new-message",
+        "qos": "0",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "e24eda1f2aa69b08",
+        "x": 1210,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "11c7fe0cd5829a5f",
+        "type": "template",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "field": "payload",
+        "fieldType": "msg",
+        "format": "handlebars",
+        "syntax": "mustache",
+        "template": "{{payload.message.text}}",
+        "output": "str",
+        "x": 780,
+        "y": 180,
+        "wires": [
+            [
+                "c74f4b9d319f6e6b",
+                "2aa6ac6b73568378"
+            ]
+        ]
+    },
+    {
+        "id": "c74f4b9d319f6e6b",
+        "type": "debug",
+        "z": "f6f2187d.f17ca8",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1160,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "e24eda1f2aa69b08",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "192.168.1.2",
+        "port": 1883,
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    }
+]
